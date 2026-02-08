@@ -1,0 +1,17 @@
+1- O programa deve ler um arquivo fonte e imprimir a lista de tokens:
+
+Dentro da pasta raiz (que contém a main.py)
+
+python main.py exemplos/teste.min --tokens
+
+2- Exibir Árvore Sintática
+
+python main.py exemplos/teste.min --tokens --ast
+
+3- Executar código Python Gerado após compilação
+
+executa comando:
+
+python main.py exemplos/teste.min
+
+e depois executa o arquivo output.py 
