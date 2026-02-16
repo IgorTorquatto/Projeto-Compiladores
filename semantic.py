@@ -6,6 +6,7 @@ class SemanticAnalyzer:
     def __init__(self):
         self.global_scope = SymbolTable()
         self.current_scope = self.global_scope
+        self.current_function_return_type = None
 
     def error(self, msg):
         raise SemanticError(f"Erro semântico: {msg}")
@@ -19,13 +20,11 @@ class SemanticAnalyzer:
         for value in vars(node).values():
             if isinstance(value, list):
                 for item in value:
-                    self.visit(item)
+                    if item is not None:
+                        self.visit(item)
             elif hasattr(value, "__dict__"):
                 self.visit(value)
 
-    # ---------------------
-    # Nós principais
-    # ---------------------
     def visit_Program(self, node):
         for stmt in node.statements:
             self.visit(stmt)
@@ -39,7 +38,7 @@ class SemanticAnalyzer:
     def visit_VarDecl(self, node):
         expr_type = self.visit(node.expr)
         if expr_type != node.var_type:
-            self.error(f"Tipo incompatível na declaração de '{node.name}'")
+            self.error(f"Tipo incompatível na declaração de '{node.name}': esperado {node.var_type}, obtido {expr_type}")
         self.current_scope.declare(
             node.name, Symbol(node.name, node.var_type)
         )
@@ -48,7 +47,7 @@ class SemanticAnalyzer:
         symbol = self.current_scope.lookup(node.name)
         expr_type = self.visit(node.expr)
         if symbol.type != expr_type:
-            self.error(f"Atribuição incompatível para '{node.name}'")
+            self.error(f"Atribuição incompatível para '{node.name}': esperado {symbol.type}, obtido {expr_type}")
 
     def visit_PrintStmt(self, node):
         self.visit(node.expr)
@@ -56,7 +55,7 @@ class SemanticAnalyzer:
     def visit_IfStmt(self, node):
         cond_type = self.visit(node.condition)
         if cond_type != "bool":
-            self.error("Condição do if deve ser booleana")
+            self.error(f"Condição do if deve ser booleana, obtido {cond_type}")
         self.visit(node.then_block)
         if node.else_block:
             self.visit(node.else_block)
@@ -64,15 +63,16 @@ class SemanticAnalyzer:
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
         if cond_type != "bool":
-            self.error("Condição do while deve ser booleana")
+            self.error(f"Condição do while deve ser booleana, obtido {cond_type}")
         self.visit(node.block)
 
     def visit_ReturnStmt(self, node):
-        return self.visit(node.expr)
+        expr_type = self.visit(node.expr)
+        if self.current_function_return_type is None:
+            self.error("Comando 'return' fora de função")
+        if expr_type != self.current_function_return_type:
+            self.error(f"Tipo de retorno incompatível: esperado {self.current_function_return_type}, obtido {expr_type}")
 
-    # ---------------------
-    # Funções
-    # ---------------------
     def visit_FunctionDecl(self, node):
         if node.name in self.global_scope.symbols:
             self.error(f"Função '{node.name}' já declarada")
@@ -83,13 +83,18 @@ class SemanticAnalyzer:
         )
 
         self.current_scope = SymbolTable(self.global_scope)
+        
         for param in node.params:
             self.current_scope.declare(
                 param.name, Symbol(param.name, param.param_type)
             )
-
+        
+        self.current_function_return_type = node.return_type
+        
         self.visit(node.block)
+        
         self.current_scope = self.global_scope
+        self.current_function_return_type = None
 
     def visit_FunctionCall(self, node):
         symbol = self.current_scope.lookup(node.name)
@@ -97,48 +102,61 @@ class SemanticAnalyzer:
             self.error(f"'{node.name}' não é uma função")
 
         params, return_type = symbol.extra
+        
         if len(node.args) != len(params):
-            self.error(f"Número incorreto de argumentos em '{node.name}'")
+            self.error(f"Número incorreto de argumentos em '{node.name}': esperado {len(params)}, obtido {len(node.args)}")
 
-        for arg, param in zip(node.args, params):
+        for i, (arg, param) in enumerate(zip(node.args, params)):
             arg_type = self.visit(arg)
             if arg_type != param.param_type:
-                self.error(f"Tipo incompatível em chamada de '{node.name}'")
+                self.error(f"Tipo incompatível no argumento {i+1} de '{node.name}': esperado {param.param_type}, obtido {arg_type}")
 
         return return_type
 
-    # ---------------------
-    # Expressões
-    # ---------------------
     def visit_BinaryOp(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
 
         if node.op in ("PLUS", "MINUS", "MULT", "DIV"):
             if left != "int" or right != "int":
-                self.error("Operações aritméticas exigem inteiros")
+                self.error(f"Operação aritmética '{node.op}' requer inteiros, obtido {left} e {right}")
             return "int"
 
         if node.op in ("LT", "GT", "LE", "GE", "EQ", "NE"):
             if left != right:
-                self.error("Comparação entre tipos incompatíveis")
+                self.error(f"Comparação '{node.op}' entre tipos incompatíveis: {left} e {right}")
             return "bool"
 
         if node.op in ("AND", "OR"):
             if left != "bool" or right != "bool":
-                self.error("Operações lógicas exigem booleanos")
+                self.error(f"Operação lógica '{node.op}' requer booleanos, obtido {left} e {right}")
             return "bool"
+
+        self.error(f"Operador binário desconhecido: {node.op}")
 
     def visit_UnaryOp(self, node):
         expr_type = self.visit(node.expr)
-        if node.op == "NOT" and expr_type != "bool":
-            self.error("Operador 'not' exige booleano")
+        
+        if node.op == "NOT":
+            if expr_type != "bool":
+                self.error(f"Operador 'not' requer booleano, obtido {expr_type}")
+        elif node.op in ("PLUS", "MINUS"):
+            if expr_type != "int":
+                self.error(f"Operador unário '{node.op}' requer inteiro, obtido {expr_type}")
+        
         return expr_type
 
-    def visit_Literal(self, node):
-        if node.value in ("true", "false"):
-            return "bool"
+    def visit_IntLiteral(self, node):
         return "int"
+
+    def visit_RealLiteral(self, node):
+        return "real"
+
+    def visit_BoolLiteral(self, node):
+        return "bool"
+
+    def visit_StringLiteral(self, node):
+        return "string"
 
     def visit_Identifier(self, node):
         symbol = self.current_scope.lookup(node.name)

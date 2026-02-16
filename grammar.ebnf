@@ -1,85 +1,84 @@
-<program> = { <statement> }
+<program> ::= { <statement> }
 
-<block> = "{" { <statement> } "}"
+<block> ::= "{" { <statement> } "}"
 
-<statement> =
-      <variable-decl> ";"
-    | <assignment> ";"
-    | <print-statement> ";"
-    | <if-statement>
-    | <while-statement>
-    | <return-statement> ";"
-    | <function-decl>
-    | <block>
+<statement> ::= <variable-decl> ";"
+              | <assignment> ";"
+              | <print-statement> ";"
+              | <if-statement>
+              | <while-statement>
+              | <return-statement> ";"
+              | <function-decl>
+              | <block>
 
-<function-decl> =
-    "def" <identifier> "(" [ <formal-params> ] ")" ":" <type> <block>
+<function-decl> ::= "def" <identifier> "(" [ <formal-params> ] ")" ":" <type> <block>
 
-<formal-params> =
-    <formal-param> { "," <formal-param> }
+<formal-params> ::= <formal-param> { "," <formal-param> }
 
-<formal-param> =
-    <identifier> ":" <type>
+<formal-param> ::= <identifier> ":" <type>
 
-<while-statement> =
-    "while" "(" <expression> ")" <block>
+<while-statement> ::= "while" "(" <expression> ")" <block>
 
-<if-statement> =
-    "if" "(" <expression> ")" <block> [ "else" <block> ]
+<if-statement> ::= "if" "(" <expression> ")" <block> [ "else" <block> ]
 
-<return-statement> =
-    "return" <expression>
+<return-statement> ::= "return" <expression>
 
-<print-statement> =
-    "print" <expression>
+<print-statement> ::= "print" <string-literal>
 
-<type> = "int" | "real" | "bool" | "void"
+<type> ::= "int"
+         | "real"
+         | "bool"
+         | "void"
 
-<variable-decl> =
-    "var" <identifier> ":" <type> "=" <expression>
+<variable-decl> ::= "var" <identifier> ":" <type> "=" <expression>
 
-<assignment> =
-    "set" <identifier> "=" <expression>
+<assignment> ::= "set" <identifier> "=" <expression>
 
-<expression> =
-    <simple-expression> { <relational-op> <simple-expression> }
+<expression> ::= <simple-expression>
+               { <relational-op> <simple-expression> }
 
-<simple-expression> =
-    <term> { <additive-op> <term> }
+<simple-expression> ::= <term>
+                      { <additive-op> <term> }
 
-<term> =
-    <factor> { <multiplicative-op> <factor> }
+<term> ::= <factor>
+         { <multiplicative-op> <factor> }
 
-<factor> =
-      <literal>
-    | <identifier>
-    | <function-call>
-    | "(" <expression> ")"
-    | <unary>
+<factor> ::= <literal>
+           | <identifier>
+           | <function-call>
+           | <sub-expression>
+           | <unary>
 
-<unary> =
-    ("+" | "-" | "not") <expression>
+<unary> ::= ( "+" | "-" | "not" ) <expression>
 
-<function-call> =
-    <identifier> "(" [ <actual-params> ] ")"
+<sub-expression> ::= "(" <expression> ")"
 
-<actual-params> =
-    <expression> { "," <expression> }
+<function-call> ::= <identifier> "(" [ <actual-params> ] ")"
 
-<relational-op> =
-    "<" | ">" | "==" | "!=" | "<=" | ">="
+<actual-params> ::= <expression> { "," <expression> }
 
-<additive-op> =
-    "+" | "-" | "or"
+<relational-op> ::= "<" | ">" | "==" | "!=" | "<=" | ">="
 
-<multiplicative-op> =
-    "*" | "/" | "and"
+<additive-op> ::= "+" | "-" | "or"
 
-<identifier> =
-    ("_" | letter) { "_" | letter | digit }
+<multiplicative-op> ::= "*" | "/" | "and"
 
-<literal> =
-    <integer-literal> | "true" | "false"
+<identifier> ::= ( "_" | <letter> )
+               { "_" | <letter> | <digit> }
 
-<integer-literal> =
-    digit { digit }
+<literal> ::= <integer-literal>
+            | <real-literal>
+            | "true"
+            | "false"
+
+<integer-literal> ::= <digit> { <digit> }
+
+<real-literal> ::= <digit> { <digit> } "." <digit> { <digit> }
+
+<string-literal> ::= '"' { <letter> | <digit> | <symbol> | " " } '"'
+
+<letter> ::= "a" | ... | "z" | "A" | ... | "Z"
+
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+<symbol> ::= qualquer caractere imprimível exceto aspas (")

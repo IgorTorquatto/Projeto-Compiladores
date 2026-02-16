@@ -1,13 +1,13 @@
 import sys
+import os
 
 from lexer import Lexer
 from parser import Parser
 from ast_printer import print_ast
 from codegen import CodeGenerator
-from semantic import SemanticAnalyzer
+from semantic import SemanticAnalyzer, SemanticError
 from tokens import TokenType
 from ast_json import print_ast_json
-
 
 
 def print_tokens(source_code):
@@ -22,59 +22,103 @@ def print_tokens(source_code):
 def print_ast_only(source_code):
     lexer = Lexer(source_code)
     parser = Parser(lexer)
-    ast = parser.parse()
-    print_ast(ast)
+    try:
+        ast = parser.parse()
+        print_ast(ast)
+    except Exception as e:
+        print(f"Erro durante o parsing: {e}")
+        sys.exit(1)
 
 
-def compile_and_generate(source_code):
-    # Lexer + Parser
+def print_ast_json_only(source_code):
     lexer = Lexer(source_code)
     parser = Parser(lexer)
-    ast = parser.parse()
+    try:
+        ast = parser.parse()
+        print_ast_json(ast)
+    except Exception as e:
+        print(f"Erro durante o parsing: {e}")
+        sys.exit(1)
 
-    # Análise semântica
-    semantic = SemanticAnalyzer()
-    semantic.visit(ast)
 
-    # Geração de código
-    codegen = CodeGenerator()
-    python_code = codegen.generate(ast)
+def compile_and_generate(source_code, output_file="output.py"):
 
-    with open("output.py", "w") as f:
-        f.write(python_code)
+    try:
+        lexer = Lexer(source_code)
+        parser = Parser(lexer)
+        ast = parser.parse()
 
-    print("sucesso! arquivo output.py já disponivel")
+        semantic = SemanticAnalyzer()
+        semantic.visit(ast)
+
+        codegen = CodeGenerator()
+        python_code = codegen.generate(ast)
+
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(python_code)
+
+        print(f"Sucesso! Arquivo '{output_file}' gerado com sucesso.")
+        
+    except SemanticError as e:
+        print(f"Erro semântico: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Erro durante a compilação: {e}")
+        sys.exit(1)
+
+
+def print_usage():
+    print(usage)
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Uso: python main.py <arquivo> [--tokens | --ast]")
+        print_usage()
         sys.exit(1)
+
+    # Verifica se pediu ajuda
+    if "--help" in sys.argv:
+        print_usage()
+        sys.exit(0)
 
     filename = sys.argv[1]
 
-    try:
-        with open(filename, "r") as f:
-            source_code = f.read()
-    except FileNotFoundError:
+    if not os.path.exists(filename):
         print(f"Erro: arquivo '{filename}' não encontrado")
         sys.exit(1)
 
-    # Flags opcionais
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            source_code = f.read()
+    except Exception as e:
+        print(f"Erro ao ler arquivo '{filename}': {e}")
+        sys.exit(1)
+
     if "--tokens" in sys.argv:
         print_tokens(source_code)
         return
 
     if "--ast" in sys.argv:
-        lexer = Lexer(source_code)
-        parser = Parser(lexer)
-        ast = parser.parse()
-        print_ast_json(ast)
+        print_ast_only(source_code)
         return
 
+    if "--ast-json" in sys.argv:
+        print_ast_json_only(source_code)
+        return
 
-    # Execução normal (pipeline completo)
-    compile_and_generate(source_code)
+    output_file = "output.py"
+    if "--output" in sys.argv:
+        try:
+            idx = sys.argv.index("--output")
+            if idx + 1 < len(sys.argv):
+                output_file = sys.argv[idx + 1]
+            else:
+                print("Erro: --output requer um nome de arquivo")
+                sys.exit(1)
+        except ValueError:
+            pass
+
+    compile_and_generate(source_code, output_file)
 
 
 if __name__ == "__main__":

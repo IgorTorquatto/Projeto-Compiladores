@@ -1,8 +1,7 @@
-var x : int = 5;
-var y : int = 3;
-
-def soma(a : int, b : int) : int {
+var x: int = 5;
+var y: int = 3;
+def soma(a: int, b: int): int {
     return a + b;
 }
-
+print "Resultado: ";
 print soma(x, y);

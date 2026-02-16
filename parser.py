@@ -1,10 +1,8 @@
 from tokens import TokenType
 from ast_nodes import *
 
-
 class ParserError(Exception):
     pass
-
 
 class Parser:
     def __init__(self, lexer):
@@ -20,14 +18,12 @@ class Parser:
         else:
             self.error(f"esperado {token_type.name}")
 
-    # <program>
     def parse(self):
         statements = []
         while self.current_token.type != TokenType.EOF:
             statements.append(self.statement())
         return Program(statements)
 
-    # <statement>
     def statement(self):
         t = self.current_token.type
 
@@ -43,7 +39,7 @@ class Parser:
 
         if t == TokenType.PRINT:
             node = self.print_stmt()
-            self.eat(TokenType.SEMICOLON)
+            self.eat(TokenType.SEMICOLON)  
             return node
 
         if t == TokenType.IF:
@@ -65,7 +61,6 @@ class Parser:
 
         self.error("comando inválido")
 
-    # { ... }
     def block(self):
         self.eat(TokenType.LBRACE)
         statements = []
@@ -95,7 +90,14 @@ class Parser:
 
     def print_stmt(self):
         self.eat(TokenType.PRINT)
-        return PrintStmt(self.expression())
+        
+        if self.current_token.type == TokenType.STRING_LITERAL:
+            token = self.current_token
+            self.eat(TokenType.STRING_LITERAL)
+            return PrintStmt(StringLiteral(token.value))
+        else:
+            expr = self.expression()
+            return PrintStmt(expr)
 
     def if_stmt(self):
         self.eat(TokenType.IF)
@@ -125,12 +127,14 @@ class Parser:
         name = self.current_token.value
         self.eat(TokenType.ID)
         self.eat(TokenType.LPAREN)
+
         params = []
         if self.current_token.type != TokenType.RPAREN:
             params.append(self.param())
             while self.current_token.type == TokenType.COMMA:
                 self.eat(TokenType.COMMA)
                 params.append(self.param())
+
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.COLON)
         return_type = self.current_token.value
@@ -146,7 +150,6 @@ class Parser:
         self.eat(self.current_token.type)
         return Param(name, ptype)
 
-    # EXPRESSÕES (precedência)
     def expression(self):
         node = self.simple_expression()
         while self.current_token.type in (
@@ -160,7 +163,9 @@ class Parser:
 
     def simple_expression(self):
         node = self.term()
-        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS, TokenType.OR):
+        while self.current_token.type in (
+            TokenType.PLUS, TokenType.MINUS, TokenType.OR
+        ):
             op = self.current_token.type
             self.eat(op)
             node = BinaryOp(node, op.name, self.term())
@@ -168,7 +173,9 @@ class Parser:
 
     def term(self):
         node = self.factor()
-        while self.current_token.type in (TokenType.MULT, TokenType.DIV, TokenType.AND):
+        while self.current_token.type in (
+            TokenType.MULT, TokenType.DIV, TokenType.AND
+        ):
             op = self.current_token.type
             self.eat(op)
             node = BinaryOp(node, op.name, self.factor())
@@ -180,16 +187,22 @@ class Parser:
         if t == TokenType.INT_LITERAL:
             value = self.current_token.value
             self.eat(TokenType.INT_LITERAL)
-            return Literal(value)
+            return IntLiteral(value)
 
-        if t == TokenType.TRUE or t == TokenType.FALSE:
+        if t == TokenType.REAL_LITERAL:
+            value = self.current_token.value
+            self.eat(TokenType.REAL_LITERAL)
+            return RealLiteral(value)
+
+        if t == TokenType.BOOL_LITERAL:
             value = self.current_token.value
             self.eat(t)
-            return Literal(value)
+            return BoolLiteral(value)
 
         if t == TokenType.ID:
             name = self.current_token.value
             self.eat(TokenType.ID)
+
             if self.current_token.type == TokenType.LPAREN:
                 self.eat(TokenType.LPAREN)
                 args = []
@@ -200,12 +213,13 @@ class Parser:
                         args.append(self.expression())
                 self.eat(TokenType.RPAREN)
                 return FunctionCall(name, args)
+
             return Identifier(name)
 
         if t in (TokenType.PLUS, TokenType.MINUS, TokenType.NOT):
             op = self.current_token.type
             self.eat(op)
-            return UnaryOp(op.name, self.expression())
+            return UnaryOp(op.name, self.factor())
 
         if t == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
