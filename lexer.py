@@ -44,6 +44,11 @@ class Lexer:
                 self.line += 1
             self.advance()
 
+    # NOVO: ignora comentários //
+    def skip_comment(self):
+        while self.pos < len(self.source) and self.peek() != '\n':
+            self.advance()
+
     def tokenize(self):
         tokens = []
 
@@ -77,8 +82,14 @@ class Lexer:
                 self.advance()
 
             elif ch == '/':
-                tokens.append(Token(TokenType.DIV, '/', self.line))
                 self.advance()
+
+                # COMENTÁRIO //
+                if self.peek() == '/':
+                    self.advance()
+                    self.skip_comment()
+                else:
+                    tokens.append(Token(TokenType.DIV, '/', self.line))
 
             elif ch == '=':
                 self.advance()
@@ -148,39 +159,57 @@ class Lexer:
 
     def number(self):
         start = self.pos
+
         while self.pos < len(self.source) and self.peek().isdigit():
             self.advance()
 
         if self.pos < len(self.source) and self.peek() == '.':
             self.advance()
+
             while self.pos < len(self.source) and self.peek().isdigit():
                 self.advance()
-            return Token(TokenType.REAL_LITERAL,
-                         self.source[start:self.pos], self.line)
 
-        return Token(TokenType.INT_LITERAL,
-                     self.source[start:self.pos], self.line)
+            return Token(
+                TokenType.REAL_LITERAL,
+                self.source[start:self.pos],
+                self.line
+            )
+
+        return Token(
+            TokenType.INT_LITERAL,
+            self.source[start:self.pos],
+            self.line
+        )
 
     def string(self):
-        self.advance()  
+        self.advance()
+
         start = self.pos
+
         while self.pos < len(self.source) and self.peek() != '"':
             self.advance()
-        
+
         if self.pos >= len(self.source):
             raise Exception(f"String não fechada na linha {self.line}")
-            
+
         value = self.source[start:self.pos]
-        self.advance()  
+
+        self.advance()
+
         return Token(TokenType.STRING_LITERAL, value, self.line)
 
     def identifier(self):
         start = self.pos
-        while self.pos < len(self.source) and (self.peek().isalnum() or self.peek() == '_'):
+
+        while self.pos < len(self.source) and (
+            self.peek().isalnum() or self.peek() == '_'
+        ):
             self.advance()
+
         text = self.source[start:self.pos]
-        
+
         token_type = KEYWORDS.get(text, TokenType.ID)
+
         return Token(token_type, text, self.line)
 
     def get_next_token(self):
@@ -188,4 +217,5 @@ class Lexer:
             tok = self.tokens[self.current]
             self.current += 1
             return tok
+
         return Token(TokenType.EOF, '', self.line)
