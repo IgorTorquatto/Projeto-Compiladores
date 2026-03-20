@@ -1,3 +1,7 @@
-x = 3.5
-y = 2.0
-print((x * y))
+x = 5
+y = 3
+def soma(a, b):
+    return (a + b)
+
+print("Resultado: ")
+print(soma(x, y))

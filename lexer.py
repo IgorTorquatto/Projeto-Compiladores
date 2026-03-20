@@ -44,7 +44,7 @@ class Lexer:
                 self.line += 1
             self.advance()
 
-    # NOVO: ignora comentários //
+    #ignora comentários //
     def skip_comment(self):
         while self.pos < len(self.source) and self.peek() != '\n':
             self.advance()
@@ -84,7 +84,7 @@ class Lexer:
             elif ch == '/':
                 self.advance()
 
-                # COMENTÁRIO //
+                #COMENTÁRIO //
                 if self.peek() == '/':
                     self.advance()
                     self.skip_comment()
