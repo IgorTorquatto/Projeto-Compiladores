@@ -7,7 +7,7 @@ Driver do compilador que conecta todas as outras fases da compilação.
 import sys
 import os
 
-from lexer import Lexer
+from lexer import Lexer, LexerError
 from parser import Parser
 from ast_printer import print_ast
 from codegen import CodeGenerator
@@ -66,6 +66,9 @@ def compile_and_generate(source_code, output_file="output.py"):
         print(f"Sucesso! Arquivo '{output_file}' gerado com sucesso.")
         
     except SemanticError as e:
+        print(e)
+        sys.exit(1)
+    except LexerError as e:
         print(e)
         sys.exit(1)
     except Exception as e:

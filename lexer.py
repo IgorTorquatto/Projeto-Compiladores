@@ -29,6 +29,10 @@ KEYWORDS = {
     "or": TokenType.OR,
 }
 
+class LexerError(Exception):
+     pass
+
+
 class Lexer:
     
     
@@ -163,7 +167,7 @@ class Lexer:
                     self.advance()
                     tokens.append(Token(TokenType.NE, '!=', self.line))
                 else:
-                    raise Exception(f"Caractere inválido '!' na linha {self.line}")
+                    raise LexerError(f"Caractere inválido '!' na linha {self.line}")
 
             elif ch == '<':
                 self.advance()
@@ -182,7 +186,7 @@ class Lexer:
                     tokens.append(Token(TokenType.GT, '>', self.line))
 
             else:
-                raise Exception(f"Caractere inválido '{ch}' na linha {self.line}")
+                raise LexerError(f"Caractere inválido '{ch}' na linha {self.line}")
 
         tokens.append(Token(TokenType.EOF, '', self.line))
         return tokens
@@ -224,7 +228,7 @@ class Lexer:
             self.advance()
 
         if self.pos >= len(self.source):
-            raise Exception(f"String não fechada na linha {self.line}")
+            raise LexerError(f"String não fechada na linha {self.line}")
 
         value = self.source[start:self.pos]
 
