@@ -25,6 +25,15 @@ class Parser:
         else:
             self.error(f"esperado {token_type.name}")
 
+    VALID_TYPES = {TokenType.INT, TokenType.REAL, TokenType.BOOL, TokenType.VOID}
+
+    def eat_type(self):
+        if self.current_token.type not in self.VALID_TYPES:
+            self.error(f"tipo esperado (int, real, bool, void), obtido '{self.current_token.value}'")
+        value = self.current_token.value
+        self.eat(self.current_token.type)
+        return value
+
     def parse(self):
         statements = []
         while self.current_token.type != TokenType.EOF:
@@ -81,8 +90,7 @@ class Parser:
         name = self.current_token.value
         self.eat(TokenType.ID)
         self.eat(TokenType.COLON)
-        var_type = self.current_token.value
-        self.eat(self.current_token.type)
+        var_type = self.eat_type()
         self.eat(TokenType.ASSIGN)
         expr = self.expression()
         return VarDecl(name, var_type, expr)
@@ -144,8 +152,7 @@ class Parser:
 
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.COLON)
-        return_type = self.current_token.value
-        self.eat(self.current_token.type)
+        return_type = self.eat_type()
         block = self.block()
         return FunctionDecl(name, params, return_type, block)
 
@@ -153,8 +160,7 @@ class Parser:
         name = self.current_token.value
         self.eat(TokenType.ID)
         self.eat(TokenType.COLON)
-        ptype = self.current_token.value
-        self.eat(self.current_token.type)
+        ptype = self.eat_type()
         return Param(name, ptype)
 
     def expression(self):
