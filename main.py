@@ -74,7 +74,13 @@ def compile_and_generate(source_code, output_file="output.py"):
 
 
 def print_usage():
-    print(usage)
+    print("""Uso: python main.py <arquivo.min> [opções]
+    Opções:
+        --tokens      Imprime a lista de tokens
+        --ast         Imprime a AST em formato legível
+        --ast-json    Imprime a AST em formato JSON
+        --output <arquivo>  Nome do arquivo de saída (padrão: output.py)
+        --help        Exibe esta mensagem""")
 
 
 def main():
