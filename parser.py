@@ -74,6 +74,11 @@ class Parser:
 
         if t == TokenType.LBRACE:
             return self.block()
+        
+        if t == TokenType.ID:
+            node = self.expression()
+            self.eat(TokenType.SEMICOLON)
+            return node
 
         self.error("comando inválido")
 
