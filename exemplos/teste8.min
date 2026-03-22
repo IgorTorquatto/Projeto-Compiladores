@@ -1,0 +1,25 @@
+// Calcular aprovação do aluno
+def aprovado(n1 : int, n2 : int) : bool {
+
+    var media : int = 0;
+
+    set media = (n1 + n2) / 2;
+
+    if (media >= 7) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+var a : int = 8;
+var b : int = 6;
+var r : bool = false;
+
+set r = aprovado(a, b);
+
+if (r and true) {
+    print "Aprovado";
+} else {
+    print "Reprovado";
+}

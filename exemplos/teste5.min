@@ -1,0 +1,10 @@
+// Comparar booleanos
+var a : bool = true;
+var b : bool = false;
+var c : bool = false;
+
+if (a and not b) {
+    set c = true;
+}
+
+print c;

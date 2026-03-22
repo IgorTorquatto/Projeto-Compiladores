@@ -1,0 +1,26 @@
+// Comparação entre três números, saber qual é o maior
+def max3(a : int, b : int, c : int) : int {
+
+    var m : int = a;
+
+    if (b > m) {
+        set m = b;
+    }
+
+    if (c > m) {
+        set m = c;
+    }
+
+    return m;
+}
+
+var x : int = 3;
+var y : int = 9;
+var z : int = 5;
+
+var r : int = 0;
+
+set r = max3(x, y, z);
+
+print "Maior:";
+print r;

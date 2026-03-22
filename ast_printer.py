@@ -1,3 +1,9 @@
+"""
+ast_printer.py
+
+Imprime AST de forma estruturada, pretty e compacta.
+"""
+
 def print_ast(node, indent=0):
     if node is None:
         print("  " * indent + "None")
@@ -63,8 +69,10 @@ def print_ast_compact(node, indent=0):
     
     print(")", end="")
 
+
 print_ast_pretty = print_ast
 print_ast_minimal = print_ast_compact
+
 
 if __name__ == "__main__":
     from ast_nodes import *

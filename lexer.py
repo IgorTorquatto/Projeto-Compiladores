@@ -1,5 +1,14 @@
+"""
+lexer.py
+
+Módulo responsável pela Análise Léxica do compilador Mini-Lang.
+Transforma o código fonte em uma sequência de tokens.
+"""
+
 from tokens import Token, TokenType
 
+
+# Palavras reservadas da linguagem
 KEYWORDS = {
     "var": TokenType.VAR,
     "set": TokenType.SET,
@@ -21,38 +30,51 @@ KEYWORDS = {
 }
 
 class Lexer:
+    
+    
     def __init__(self, source):
-        self.source = source
-        self.pos = 0
-        self.line = 1
-        self.tokens = self.tokenize()
-        self.current = 0
+        self.source = source           # Código fonte como string
+        self.pos = 0                   # Posição atual no texto
+        self.line = 1                  # Linha atual (inicial na 1)
+        self.tokens = self.tokenize()  # Lista de token gerada
+        self.current = 0               # Índice do token atual
 
+
+    # Retorna o caractere atual sem avançar
     def peek(self):
         if self.pos >= len(self.source):
             return '\0'
         return self.source[self.pos]
 
+
+    # Avança um caractere e retorna ele
     def advance(self):
         ch = self.peek()
         self.pos += 1
         return ch
 
+
+    # Ignora espaços em branco
     def skip_whitespace(self):
         while self.pos < len(self.source) and self.peek().isspace():
             if self.peek() == '\n':
                 self.line += 1
             self.advance()
 
-    #ignora comentários //
+
+    # Ignora comentários no formato "//"
     def skip_comment(self):
         while self.pos < len(self.source) and self.peek() != '\n':
             self.advance()
 
+
+    # Função principal que gera todos os tokens
+    # Verifica o que a string significa e marca qual é o token
     def tokenize(self):
         tokens = []
 
         while self.pos < len(self.source):
+            
             self.skip_whitespace()
 
             if self.pos >= len(self.source):
@@ -65,7 +87,11 @@ class Lexer:
 
             elif ch == '"':
                 tokens.append(self.string())
-
+                
+            # ==============================
+            # SÍMBOLOS ÚNICOS
+            # ==============================
+            
             elif ch.isalpha() or ch == '_':
                 tokens.append(self.identifier())
 
@@ -79,12 +105,44 @@ class Lexer:
 
             elif ch == '*':
                 tokens.append(Token(TokenType.MULT, '*', self.line))
+                self.advance()            
+
+            elif ch == '(':
+                tokens.append(Token(TokenType.LPAREN, '(', self.line))
                 self.advance()
+
+            elif ch == ')':
+                tokens.append(Token(TokenType.RPAREN, ')', self.line))
+                self.advance()
+
+            elif ch == '{':
+                tokens.append(Token(TokenType.LBRACE, '{', self.line))
+                self.advance()
+
+            elif ch == '}':
+                tokens.append(Token(TokenType.RBRACE, '}', self.line))
+                self.advance()
+
+            elif ch == ';':
+                tokens.append(Token(TokenType.SEMICOLON, ';', self.line))
+                self.advance()
+
+            elif ch == ',':
+                tokens.append(Token(TokenType.COMMA, ',', self.line))
+                self.advance()
+
+            elif ch == ':':
+                tokens.append(Token(TokenType.COLON, ':', self.line))
+                self.advance()
+                
+            # ==============================
+            # SÍMBOLOS DUPLOS
+            # ==============================
 
             elif ch == '/':
                 self.advance()
 
-                #COMENTÁRIO //
+                # COMENTÁRIO //
                 if self.peek() == '/':
                     self.advance()
                     self.skip_comment()
@@ -123,40 +181,14 @@ class Lexer:
                 else:
                     tokens.append(Token(TokenType.GT, '>', self.line))
 
-            elif ch == '(':
-                tokens.append(Token(TokenType.LPAREN, '(', self.line))
-                self.advance()
-
-            elif ch == ')':
-                tokens.append(Token(TokenType.RPAREN, ')', self.line))
-                self.advance()
-
-            elif ch == '{':
-                tokens.append(Token(TokenType.LBRACE, '{', self.line))
-                self.advance()
-
-            elif ch == '}':
-                tokens.append(Token(TokenType.RBRACE, '}', self.line))
-                self.advance()
-
-            elif ch == ';':
-                tokens.append(Token(TokenType.SEMICOLON, ';', self.line))
-                self.advance()
-
-            elif ch == ',':
-                tokens.append(Token(TokenType.COMMA, ',', self.line))
-                self.advance()
-
-            elif ch == ':':
-                tokens.append(Token(TokenType.COLON, ':', self.line))
-                self.advance()
-
             else:
                 raise Exception(f"Caractere inválido '{ch}' na linha {self.line}")
 
         tokens.append(Token(TokenType.EOF, '', self.line))
         return tokens
 
+    
+    # Reconhece números inteiros e reais
     def number(self):
         start = self.pos
 
@@ -181,6 +213,8 @@ class Lexer:
             self.line
         )
 
+    
+    # Reconhece strings entre aspas
     def string(self):
         self.advance()
 
@@ -198,6 +232,8 @@ class Lexer:
 
         return Token(TokenType.STRING_LITERAL, value, self.line)
 
+    
+    # Reconhece identificadores e palavras reservadas
     def identifier(self):
         start = self.pos
 
@@ -212,6 +248,8 @@ class Lexer:
 
         return Token(token_type, text, self.line)
 
+    
+    # Retorna próximo token da lista
     def get_next_token(self):
         if self.current < len(self.tokens):
             tok = self.tokens[self.current]

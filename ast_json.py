@@ -1,3 +1,11 @@
+"""
+ast_json.py
+
+Implementa a conversão de AST para o dicionário Python.
+Percorre recursivamente os nós da AST, transforma em 
+dict para poder imprimir em formato JSON.
+"""
+
 import json
 
 
@@ -37,11 +45,13 @@ def ast_to_dict(node):
     return result
 
 
+# Imprime AST formatato em JSON
 def print_ast_json(ast):
     ast_dict = ast_to_dict(ast)
     print(json.dumps(ast_dict, indent=2, ensure_ascii=False))
 
 
+# Retorna JSON como string
 def ast_to_json_string(ast, indent=None):
     ast_dict = ast_to_dict(ast)
     if indent is not None:
@@ -49,10 +59,12 @@ def ast_to_json_string(ast, indent=None):
     return json.dumps(ast_dict, ensure_ascii=False)
 
 
+# Salva AST em arquivo JSON
 def save_ast_json(ast, filename, indent=2):
     ast_dict = ast_to_dict(ast)
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(ast_dict, f, indent=indent, ensure_ascii=False)
+
 
 if __name__ == "__main__":
     from ast_nodes import *

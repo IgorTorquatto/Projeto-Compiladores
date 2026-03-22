@@ -1,0 +1,28 @@
+// Números de Fibonacci: 7o Número
+def fib(n : int) : int {
+    if (n <= 1) {
+        return n;
+    }
+
+    var a : int = 0;
+    var b : int = 1;
+    var i : int = 2;
+    var temp : int = 0;
+
+    while (i <= n) {
+        set temp = a + b;
+        set a = b;
+        set b = temp;
+        set i = i + 1;
+    }
+
+    return b;
+}
+
+var x : int = 7;
+var r : int = 0;
+
+set r = fib(x);
+
+print "Fibonacci:";
+print r;

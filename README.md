@@ -15,27 +15,22 @@ O compilador foi implementado inteiramente em **Python**, sem o uso de geradores
 
 ## 📁 Estrutura do Projeto
 
-```
-ast_nodes.py (Definição dos nós da AST)
-ast_printer.py (Impressão da AST)
-ast_json.py (Conversão da AST para JSON)
-codegen.py (Gerador de Código Python)
-main.py   (Ponto de entrada do compilador)
-grammar.ebnf (Gramática)
-lexer.py (Analisador léxico)  
-parser.py (Analisador Sintático)
-semantic.py (Analisador Semântico)
-symbol_table.py (Tabela de símbolos)        
-tokens.py (Definição dos tokens)
-
-```
-
----
-
+    ast_nodes.py (Definição dos nós da AST)
+    ast_printer.py (Impressão da AST)
+    ast_json.py (Conversão da AST para JSON)
+    codegen.py (Gerador de Código Python)
+    main.py   (Ponto de entrada do compilador)
+    grammar.ebnf (Gramática)
+    lexer.py (Analisador léxico)  
+    parser.py (Analisador Sintático)
+    semantic.py (Analisador Semântico)
+    symbol_table.py (Tabela de símbolos)        
+    tokens.py (Definição dos tokens)
 
 ---
 
 ## 📂 Arquivo de Entrada (MiniLang)
+
 
 O código fonte da linguagem MiniLang deve ser colocado na pasta:
 
@@ -45,6 +40,7 @@ exemplos/teste.min
 
 Basta editar esse arquivo para escrever seu programa em MiniLang.
 
+---
 
 ## ▶️ Execução do Compilador (Fluxo Normal)
 
@@ -56,7 +52,7 @@ python main.py exemplos/teste.min
 
 Após a execução, o compilador gera automaticamente o arquivo:
 
-```
+```bash
 output.py
 ```
 

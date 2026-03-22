@@ -1,0 +1,12 @@
+// Subtrair números até zerar usando laço
+var i : int = 0;
+var sub : int = 10;
+var limite : int = 5;
+
+while (i < limite) {
+    set sub = sub - i;
+    set i = i + 1;
+}
+
+print "Resultado:";
+print sub;

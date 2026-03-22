@@ -1,3 +1,9 @@
+"""
+main.py
+
+Driver do compilador que conecta todas as outras fases da compilação.
+"""
+
 import sys
 import os
 

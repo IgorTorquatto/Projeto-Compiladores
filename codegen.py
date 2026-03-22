@@ -1,18 +1,31 @@
+"""
+codegen.py
+
+Implementa o gerador de código.
+Transforma o código em Mini-Lang para Python.
+"""
+
 from ast_nodes import *
 
 
 class CodeGenerator:
+    
     def __init__(self):
-        self.indent = 0
-        self.lines = []
-        self.func_name = None  
+        self.indent = 0         # Nível de indentação atual
+        self.lines = []         # Linhas geradas
+        self.func_name = None   # Noma da função atual, se estiver em uma
 
+
+    # Adiciona linha com indentação
     def emit(self, line=""):
         self.lines.append("    " * self.indent + line)
 
+
+    # Função principal para gerar o código final
     def generate(self, node):
         self.visit(node)
         return "\n".join(self.lines)
+
 
     def visit(self, node):
         if node is None:
@@ -20,6 +33,7 @@ class CodeGenerator:
         method_name = f"visit_{type(node).__name__}"
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
+
 
     def generic_visit(self, node):
         for value in vars(node).values():
@@ -29,9 +43,15 @@ class CodeGenerator:
             elif hasattr(value, "__dict__"):
                 self.visit(value)
 
+
+    # ========================================
+    # Structures
+    # ========================================
+
     def visit_Program(self, node):
         for stmt in node.statements:
             self.visit(stmt)
+
 
     def visit_Block(self, node):
         self.indent += 1
@@ -39,15 +59,23 @@ class CodeGenerator:
             self.visit(stmt)
         self.indent -= 1
 
+
+    # ========================================
+    # Statements
+    # ========================================
+
     def visit_VarDecl(self, node):
         self.emit(f"{node.name} = {self.visit(node.expr)}")
+
 
     def visit_Assignment(self, node):
         self.emit(f"{node.name} = {self.visit(node.expr)}")
 
+
     def visit_PrintStmt(self, node):
         # Agora aceita qualquer expressão (string, número, chamada de função, etc.)
         self.emit(f"print({self.visit(node.expr)})")
+
 
     def visit_IfStmt(self, node):
         self.emit(f"if {self.visit(node.condition)}:")
@@ -56,12 +84,15 @@ class CodeGenerator:
             self.emit("else:")
             self.visit(node.else_block)
 
+
     def visit_WhileStmt(self, node):
         self.emit(f"while {self.visit(node.condition)}:")
         self.visit(node.block)
 
+
     def visit_ReturnStmt(self, node):
         self.emit(f"return {self.visit(node.expr)}")
+
 
     def visit_FunctionDecl(self, node):
         params = ", ".join(p.name for p in node.params)
@@ -71,9 +102,15 @@ class CodeGenerator:
         self.emit()  
         self.func_name = None
 
+
+    # ========================================
+    # Expressions
+    # ========================================
+
     def visit_FunctionCall(self, node):
         args = ", ".join(self.visit(arg) for arg in node.args)
         return f"{node.name}({args})"
+
 
     def visit_BinaryOp(self, node):
         op_map = {
@@ -93,6 +130,7 @@ class CodeGenerator:
         op = op_map.get(node.op, node.op)
         return f"({self.visit(node.left)} {op} {self.visit(node.right)})"
 
+
     def visit_UnaryOp(self, node):
         op_map = {
             "PLUS": "+",
@@ -102,18 +140,27 @@ class CodeGenerator:
         op = op_map.get(node.op, node.op)
         return f"({op} {self.visit(node.expr)})"
 
+
+    # ========================================
+    # Tipos de variáveis
+    # ========================================
+
     def visit_IntLiteral(self, node):
         return str(node.value)
+
 
     def visit_RealLiteral(self, node):
         return str(node.value)
 
+
     def visit_BoolLiteral(self, node):
         return "True" if node.value else "False"
+
 
     def visit_StringLiteral(self, node):
         escaped = node.value.replace('"', '\\"')
         return f'"{escaped}"'
+
 
     def visit_Identifier(self, node):
         return node.name

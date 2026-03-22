@@ -1,5 +1,21 @@
+"""
+ast_nodes.py
+
+Define os nós da Abstract Syntax Tree (AST) da linguagem Mini-Lang.
+A AST representa a estrutura hierárquica do programa após a análise sintática.
+"""
+
+# ========================================
+# Classe base
+# ========================================
+
 class Node:
     pass
+
+
+# ========================================
+# Structures
+# ========================================
 
 class Program(Node):
     def __init__(self, statements):
@@ -9,6 +25,11 @@ class Program(Node):
 class Block(Node):
     def __init__(self, statements):
         self.statements = statements
+
+
+# ========================================
+# Statements
+# ========================================
 
 class VarDecl(Node):
     def __init__(self, name, var_type, expr):
@@ -29,6 +50,7 @@ class Param(Node):
     def __init__(self, name, param_type):
         self.name = name
         self.param_type = param_type
+
 
 class Assignment(Node):
     def __init__(self, name, expr):
@@ -58,6 +80,11 @@ class ReturnStmt(Node):
     def __init__(self, expr):
         self.expr = expr
 
+
+# ========================================
+# Expressions
+# ========================================
+
 class BinaryOp(Node):
     def __init__(self, left, op, right):
         self.left = left
@@ -80,6 +107,10 @@ class Identifier(Node):
     def __init__(self, name):
         self.name = name
 
+
+# ========================================
+# Tipos de variáveis
+# ========================================
 
 class IntLiteral(Node):
     def __init__(self, value):

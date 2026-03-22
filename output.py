@@ -1,7 +1,15 @@
-x = 5
-y = 3
-def soma(a, b):
-    return (a + b)
+def max3(a, b, c):
+    m = a
+    if (b > m):
+        m = b
+    if (c > m):
+        m = c
+    return m
 
-print("Resultado: ")
-print(soma(x, y))
+x = 3
+y = 9
+z = 5
+r = 0
+r = max3(x, y, z)
+print("Maior:")
+print(r)

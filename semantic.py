@@ -1,20 +1,32 @@
+"""
+semantic.py
+
+Implementa o analisador semântico da linguagem Mini-Lang.
+Ele percorre a AST e verifica os tipos, as variáveis, os escopos e estruturas definidas.
+"""
+
 from symbol_table import SymbolTable, Symbol, SemanticError
 from ast_nodes import *
 
 
 class SemanticAnalyzer:
+    
     def __init__(self):
-        self.global_scope = SymbolTable()
-        self.current_scope = self.global_scope
-        self.current_function_return_type = None
+        self.global_scope = SymbolTable()         # Escopo global
+        self.current_scope = self.global_scope    # Escopo atual (começa no global)
+        self.current_function_return_type = None  # Tipo de retorn da função atual
 
+
+    # Erro semântico
     def error(self, msg):
         raise SemanticError(f"Erro semântico: {msg}")
+
 
     def visit(self, node):
         method_name = f"visit_{type(node).__name__}"
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
+
 
     def generic_visit(self, node):
         for value in vars(node).values():
@@ -25,15 +37,26 @@ class SemanticAnalyzer:
             elif hasattr(value, "__dict__"):
                 self.visit(value)
 
+
+    # ========================================
+    # Criar novas strutures
+    # ========================================
+
     def visit_Program(self, node):
         for stmt in node.statements:
             self.visit(stmt)
+
 
     def visit_Block(self, node):
         self.current_scope = SymbolTable(self.current_scope)
         for stmt in node.statements:
             self.visit(stmt)
         self.current_scope = self.current_scope.parent
+
+
+    # ========================================
+    # Criar novos statements
+    # ========================================
 
     def visit_VarDecl(self, node):
         expr_type = self.visit(node.expr)
@@ -46,6 +69,7 @@ class SemanticAnalyzer:
             node.name, Symbol(node.name, node.var_type)
         )
 
+
     def visit_Assignment(self, node):
         symbol = self.current_scope.lookup(node.name)
         expr_type = self.visit(node.expr)
@@ -55,8 +79,11 @@ class SemanticAnalyzer:
                 f"Atribuição incompatível para '{node.name}': esperado {symbol.type}, obtido {expr_type}"
             )
 
+
     def visit_PrintStmt(self, node):
         self.visit(node.expr)
+        
+
 
     def visit_IfStmt(self, node):
         cond_type = self.visit(node.condition)
@@ -68,6 +95,7 @@ class SemanticAnalyzer:
 
         if node.else_block:
             self.visit(node.else_block)
+            
 
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
@@ -76,6 +104,7 @@ class SemanticAnalyzer:
             self.error(f"Condição do while deve ser booleana, obtido {cond_type}")
 
         self.visit(node.block)
+
 
     def visit_ReturnStmt(self, node):
         expr_type = self.visit(node.expr)
@@ -87,6 +116,7 @@ class SemanticAnalyzer:
             self.error(
                 f"Tipo de retorno incompatível: esperado {self.current_function_return_type}, obtido {expr_type}"
             )
+
 
     def visit_FunctionDecl(self, node):
 
@@ -112,6 +142,11 @@ class SemanticAnalyzer:
         self.current_scope = self.global_scope
         self.current_function_return_type = None
 
+
+    # ========================================
+    # Cria novas expressions
+    # ========================================
+    
     def visit_FunctionCall(self, node):
 
         symbol = self.current_scope.lookup(node.name)
@@ -135,6 +170,7 @@ class SemanticAnalyzer:
                 )
 
         return return_type
+
 
     def visit_BinaryOp(self, node):
 
@@ -177,6 +213,7 @@ class SemanticAnalyzer:
 
         self.error(f"Operador binário desconhecido: {node.op}")
 
+
     def visit_UnaryOp(self, node):
 
         expr_type = self.visit(node.expr)
@@ -195,20 +232,29 @@ class SemanticAnalyzer:
                     f"Operador unário '{node.op}' requer número, obtido {expr_type}"
                 )
 
-        return expr_type
+        return expr_type    
 
-    def visit_IntLiteral(self, node):
-        return "int"
-
-    def visit_RealLiteral(self, node):
-        return "real"
-
-    def visit_BoolLiteral(self, node):
-        return "bool"
-
-    def visit_StringLiteral(self, node):
-        return "string"
 
     def visit_Identifier(self, node):
         symbol = self.current_scope.lookup(node.name)
         return symbol.type
+
+
+    # ========================================
+    # Cria novos tipos de variáveis
+    # ========================================
+    
+    def visit_IntLiteral(self, node):
+        return "int"
+
+
+    def visit_RealLiteral(self, node):
+        return "real"
+
+
+    def visit_BoolLiteral(self, node):
+        return "bool"
+
+
+    def visit_StringLiteral(self, node):
+        return "string"

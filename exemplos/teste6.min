@@ -1,0 +1,8 @@
+// Soma de inteiro com real
+var x : int = 5;
+var y : real = 2.5;
+var z : real = 0.0;
+
+set z = x + y;
+
+print z;

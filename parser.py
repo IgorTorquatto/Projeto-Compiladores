@@ -1,3 +1,10 @@
+"""
+parser.py
+
+Implementa o analisador sintático da linguagem Mini-Lang.
+Ele recebe os tokens produzidos pelo lexer e constrói a AST.
+"""
+
 from tokens import TokenType
 from ast_nodes import *
 

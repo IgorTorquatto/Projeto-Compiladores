@@ -1,0 +1,22 @@
+// Calcular a soma dos pares de números até 10
+var i : int = 0;
+var total : int = 0;
+var limite : int = 10;
+
+while (i < limite) {
+
+    var par : bool = false;
+
+    if ((i / 2) * 2 == i) {
+        set par = true;
+    }
+
+    if (par) {
+        set total = total + i;
+    }
+
+    set i = i + 1;
+}
+
+print "Soma dos pares:";
+print total;
