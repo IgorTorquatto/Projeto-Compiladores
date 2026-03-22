@@ -66,7 +66,7 @@ def compile_and_generate(source_code, output_file="output.py"):
         print(f"Sucesso! Arquivo '{output_file}' gerado com sucesso.")
         
     except SemanticError as e:
-        print(f"Erro semântico: {e}")
+        print(e)
         sys.exit(1)
     except Exception as e:
         print(f"Erro durante a compilação: {e}")
